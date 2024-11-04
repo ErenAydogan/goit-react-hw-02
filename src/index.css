@@ -12,3 +12,8 @@
 {
     @apply flex flex-col items-center m-auto max-w-screen-xl w-full;
 }
+
+.button-container
+{
+    @apply flex flex-wrap justify-center;
+}

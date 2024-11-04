@@ -1,77 +1,56 @@
 import { useState, useEffect } from 'react';
-import Button from './components/Button';
+import Title from './components/Title/Title';
+import Button from './components/Button/Button';
+import Message from './components/Message/Message';
+import Feedback from './components/Feedback/Feedback';
 
 function App() {
-  const [good, setGood] = useState(() => {
-    const getGood = localStorage.getItem("good");
-    return getGood ? Number(getGood) : 0;
-  });
-  
-  const [neutral, setNeutral] = useState(() => {
-    const getNeutral = localStorage.getItem("neutral");
-    return getNeutral ? Number(getNeutral) : 0;
-  });
-
-  const [bad, setBad] = useState(() => {
-    const getBad = localStorage.getItem("bad");
-    return getBad ? Number(getBad) : 0;
+  const [feedback, setFeedback] = useState(
+    () => {
+    const storedFeedback = {
+      good: Number(sessionStorage.getItem('good')) || 0,
+      neutral: Number(sessionStorage.getItem('neutral')) || 0,
+      bad: Number(sessionStorage.getItem('bad')) || 0,
+    };
+    return storedFeedback;
   });
 
-
-  const total = good + neutral + bad;
-  const positive = total > 0 ? Math.round((good / total) * 100) : 0;
-
+  const total = feedback.good + feedback.neutral + feedback.bad;
+  const positive = total > 0 ? Math.round(((feedback.good + feedback.neutral) / total) * 100) : 0;
 
   useEffect(() => {
-    localStorage.setItem("good", good);
-    localStorage.setItem("neutral", neutral);
-    localStorage.setItem("bad", bad);
-  }, [good, neutral, bad]);
-
+    Object.keys(feedback).forEach(key => {
+      sessionStorage.setItem(key, feedback[key]);
+    });
+  }, [feedback]);
 
   const handleClick = (type) => {
-    if (type === "good") {
-      setGood(prevGood => prevGood + 1);
-    } else if (type === "neutral") {
-      setNeutral(prevNeutral => prevNeutral + 1);
-    } else if (type === "bad") {
-      setBad(prevBad => prevBad + 1);
-    } else if (type === "reset") {
-      setGood(0);
-      setNeutral(0);
-      setBad(0);
-      localStorage.removeItem("good");
-      localStorage.removeItem("neutral");
-      localStorage.removeItem("bad");
-      localStorage.removeItem("total");
+    if (type === 'reset') {
+      setFeedback({ good: 0, neutral: 0, bad: 0 });
+      Object.keys(feedback).forEach(key => {
+        sessionStorage.removeItem(key);
+      });
+    } else {
+      setFeedback(prevFeedback => ({
+        ...prevFeedback,
+        [type]: prevFeedback[type] + 1,
+      }));
     }
-  };  
+  };
 
   return (
-    <>
     <div className="outline-container">
-      <h1 className="title">Sip Happens Café</h1>
-      <p className="message">Please leave your feedback about our services by selecting one of the options below</p>
-      <Button text="Good" class="button-good" onClick={() => handleClick("good")}/>
-      <Button text="Neutral" class="button-neutral" onClick={() => handleClick("neutral")}/>
-      <Button text="Bad" class="button-bad" onClick={() => handleClick("bad")}/>
-      <Button text="Reset" class="button-reset" onClick={() => handleClick("reset")}/>
-      {
-        total > 0 ? (
-          <>
-          <p>Good: {good}</p>
-          <p>Neutral: {neutral}</p>
-          <p>Bad: {bad}</p>
-          <p>Total: {total}</p>
-          <p>Positive: {positive}%</p>
-          </>
-        ) : (
-          <p className="feedback-text">No feedback yet</p>
-        )
-      }
+      <Title>Sip Happens Café</Title>
+      <Message>Please leave your feedback about our services by selecting one of the options below</Message>
+      <div className="button-container">
+        <Button text="Good" addClass="button-good" onClick={() => handleClick('good')} />
+        <Button text="Neutral" addClass="button-neutral" onClick={() => handleClick('neutral')} />
+        <Button text="Bad" addClass="button-bad" onClick={() => handleClick('bad')} />
+        <Button text="Reset" addClass="button-reset" onClick={() => handleClick('reset')} />
+      </div>
+      <Feedback good={feedback.good} neutral={feedback.neutral} bad={feedback.bad} total={total} positive={positive} />
     </div>
-    </>
-  )
+  );
 }
 
-export default App
+export default App;
